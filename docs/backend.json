@@ -1,0 +1,132 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user profile information.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The unique ID of the user."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user profile was created."
+        }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "AnalysisCache": {
+      "title": "Analysis Cache",
+      "description": "Caches the analysis result for a given URL.",
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL that was analyzed."
+        },
+        "riskScore": {
+          "type": "number",
+          "description": "The calculated risk score."
+        },
+        "htmlSummary": {
+          "type": "string",
+          "description": "The AI-generated summary of the HTML content."
+        },
+        "suggestions": {
+          "type": "string",
+          "description": "The AI-generated suggestions for phishing detection."
+        },
+        "ssl": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": "boolean"
+            },
+            "error": {
+              "type": "string"
+            },
+            "subject": {
+              "type": "object"
+            },
+            "issuer": {
+              "type": "object"
+            },
+            "valid_from": {
+              "type": "string"
+            },
+            "valid_to": {
+              "type": "string"
+            }
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the analysis was cached."
+        }
+      },
+      "required": ["url", "riskScore", "htmlSummary", "suggestions", "ssl", "createdAt"]
+    },
+     "AnalysisHistoryItem": {
+      "title": "Analysis History Item",
+      "description": "A record of a single URL analysis performed by a user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+            "type": "string",
+            "description": "The ID of the user who performed the analysis."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The URL that was analyzed."
+        },
+        "riskScore": {
+          "type": "number",
+          "description": "The calculated risk score."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the analysis was performed."
+        }
+      },
+      "required": ["userId", "url", "riskScore", "createdAt"]
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Stores user profile information."
+    },
+    "/analysisCache/{cacheId}": {
+      "schema": {
+        "$ref": "#/entities/AnalysisCache"
+      },
+      "description": "Stores cached analysis results for URLs."
+    },
+    "/users/{userId}/analysisHistory/{historyId}": {
+        "schema": {
+            "$ref": "#/entities/AnalysisHistoryItem"
+        },
+        "description": "Stores the analysis history for a specific user."
+    }
+  }
+}

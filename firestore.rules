@@ -1,0 +1,69 @@
+/**
+ * @fileoverview Firestore Security Rules for the application.
+ *
+ * Core Philosophy:
+ * This ruleset provides public read access to analysis cache results while restricting write access.
+ * User-specific data like analysis history is protected and only accessible by the owner.
+ *
+ * Data Structure:
+ * - /analysisCache/{cacheId}: Publicly readable cache of analysis results.
+ * - /users/{userId}: Private user profile data.
+ * - /users/{userId}/analysisHistory/{historyId}: Private analysis history for each user.
+ *
+ * Key Security Decisions:
+ * - Public read access is enabled for the `/analysisCache` collection.
+ * - Authenticated users can write to the cache.
+ * - Users can only read and write their own documents in the `/users` collection and subcollections.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Grants public read access to the analysis cache, but requires authentication for all write operations.
+     * @path /analysisCache/{cacheId}
+     * @allow (get, list) - Any user can read analysis cache results.
+     * @allow (create, update, delete) - Only authenticated users can create, update, or delete analysis cache results.
+     */
+    match /analysisCache/{cacheId} {
+      allow get, list: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+    
+    /**
+     * @description Secures user-specific data.
+     * @path /users/{userId}
+     */
+    match /users/{userId} {
+        allow read, write: if isOwner(userId);
+
+        /**
+         * @description Secures the analysis history for a user. Only the owner can read or write their history.
+         * @path /users/{userId}/analysisHistory/{historyId}
+         * @allow (get, list, create, update, delete) - Only the user who owns this subcollection can access it.
+         */
+        match /analysisHistory/{historyId} {
+            allow read, write: if isOwner(userId);
+        }
+    }
+
+    // --- Helper Functions ---
+
+    /**
+     * @description Checks if the user is signed in.
+     * @return {boolean} True if the user is signed in, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    /**
+     * @description Checks if the requesting user is the owner of the document.
+     * @param {string} userId - The ID of the user to check against.
+     * @return {boolean} True if the requester's UID matches the provided userId.
+     */
+    function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
