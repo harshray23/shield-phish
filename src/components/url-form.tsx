@@ -38,17 +38,9 @@ export function UrlForm({ setAnalysis }: UrlFormProps) {
     setAnalysis({ status: 'loading', data: null, error: null });
     
     try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: data.url }),
-      });
-
-      const result = await response.json();
+      const result = await analyzeUrl(data.url);
       
-      if (response.ok && result.success) {
+      if (result.success) {
         setAnalysis({ status: 'success', data: result.data, error: null });
       } else {
         const errorMessage = result.error || 'An unknown error occurred.';
