@@ -1,3 +1,4 @@
+
 export type SslDetails = {
   valid: boolean;
   error?: string;

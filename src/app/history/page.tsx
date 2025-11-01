@@ -37,8 +37,8 @@ export default function HistoryPage() {
   const firestore = useFirestore();
 
   const historyQuery = useMemo(() => {
-    if (!user) return null;
-    return query(collection(firestore!, 'users', user.uid, 'analysisHistory'), orderBy('createdAt', 'desc'));
+    if (!user || !firestore) return null;
+    return query(collection(firestore, 'users', user.uid, 'analysisHistory'), orderBy('createdAt', 'desc'));
   }, [user, firestore]);
 
   const { data: history, loading: historyLoading } = useCollection<AnalysisHistoryItem>(historyQuery);
